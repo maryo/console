@@ -16,7 +16,6 @@ use Nette\Http\RequestFactory;
 use Nette\Schema\Expect;
 use Nette\Schema\Schema;
 use ReflectionClass;
-use ReflectionProperty;
 use stdClass;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -250,8 +249,6 @@ class ConsoleExtension extends CompilerExtension
 			$commandName = $asCommandAttribute->name;
 		} elseif (is_callable([$type, 'getDefaultName'])) {
 			$commandName = $type::getDefaultName();
-		} elseif (property_exists($type, 'defaultName')) {
-			$commandName = (new ReflectionProperty($type, 'defaultName'))->getValue();
 		}
 
 		if (!is_string($commandName) || $commandName === '') {
