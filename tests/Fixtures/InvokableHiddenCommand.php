@@ -8,22 +8,19 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Invokable command which does NOT extend Symfony's Command class, see
- * https://symfony.com/blog/new-in-symfony-7-3-invokable-commands-and-input-attributes
+ * Invokable command with the hidden flag set via #[AsCommand], to cover the pipe-encoded
+ * name|hidden decoding for services which don't extend Command.
  */
 #[AsCommand(
-	name: 'app:invokable',
-	aliases: ['app:invokable-alias'],
-	description: 'Invokable command',
-	help: 'Invokable command help',
-	usages: ['--foo', '--bar']
+	name: 'app:invokable-hidden',
+	hidden: true
 )]
-final class InvokableCommand
+final class InvokableHiddenCommand
 {
 
 	public function __invoke(InputInterface $input, OutputInterface $output): int
 	{
-		$output->write('invoked');
+		$output->write('invoked-hidden');
 
 		return Command::SUCCESS;
 	}

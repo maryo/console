@@ -42,12 +42,41 @@ Toolkit::test(function (): void {
 	Assert::type(Command::class, $command);
 	Assert::same('app:invokable', $command->getName());
 	Assert::same('Invokable command', $command->getDescription());
+	Assert::same(['app:invokable-alias'], $command->getAliases());
+	Assert::same('Invokable command help', $command->getHelp());
 	Assert::same(['app:invokable --foo', 'app:invokable --bar'], $command->getUsages());
+
+	// The alias resolves to the very same wrapped command
+	Assert::same($command, $application->find('app:invokable-alias'));
 
 	$tester = new CommandTester($command);
 	$tester->execute([]);
 	Assert::same('invoked', $tester->getDisplay());
 	Assert::same(Command::SUCCESS, $tester->getStatusCode());
+});
+
+// Invokable command with the hidden flag set via #[AsCommand].
+// A plain, unrelated service ("other") is registered alongside it to verify it's skipped, not treated as a command.
+Toolkit::test(function (): void {
+	$container = ContainerBuilder::of()
+		->withCompiler(function (Compiler $compiler): void {
+			$compiler->addExtension('console', new ConsoleExtension(true));
+			$compiler->addConfig(Neonkit::load(<<<'NEON'
+				console:
+				services:
+					invokable: Tests\Fixtures\InvokableHiddenCommand
+					other: stdClass
+			NEON));
+		})->build();
+
+	$application = $container->getByType(Application::class);
+	assert($application instanceof Application);
+
+	Assert::count(1, $container->findByType(Command::class));
+
+	$command = $application->find('app:invokable-hidden');
+	Assert::same('app:invokable-hidden', $command->getName());
+	Assert::true($command->isHidden());
 });
 
 // Invokable command discovered purely via the "console.command" tag (no attribute, does not extend Command)
